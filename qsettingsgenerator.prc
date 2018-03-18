@@ -13,11 +13,7 @@ debug_and_release {
 }
 
 SETTINGSGENERATOR_DIR = $$SETTINGSGENERATOR_DIR$$SUFFIX
-
-#header_build_install.path = $$shadowed($$SETTINGSGENERATOR_DIR)
-#header_build_install.files += $$PWD/isettingsaccessor.h $$PWD/settingsentry.h
-#INSTALLS += header_build_install
-#!qpmx_static: PRE_TARGETDEPS += install_header_build_install
+SETTINGSGENERATOR_BUILD_HEADERS += $$PWD/isettingsaccessor.h $$PWD/settingsentry.h
 
 settingsgenerator_c.name = generator.py ${QMAKE_FILE_IN}
 settingsgenerator_c.input = SETTINGS_GENERATORS

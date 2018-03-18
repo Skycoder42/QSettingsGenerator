@@ -9,6 +9,8 @@ class SettingsEntry
 	Q_DISABLE_COPY(SettingsEntry)
 
 public:
+	SettingsEntry();
+
 	T get() const;
 	void set(T value);
 	void reset();
@@ -31,12 +33,21 @@ class SettingsEntry<void>
 	Q_DISABLE_COPY(SettingsEntry)
 
 public:
+	SettingsEntry() {}
+
 	// internal
-	void setup(const QString &key, ISettingsAccessor *accessor, const QVariant &defaultValue = {});
+	void setup(const QString &, ISettingsAccessor *, const QVariant & = {}) {}
 };
 
 
 // ------------- Generic Implementation -------------
+
+template<typename T>
+SettingsEntry<T>::SettingsEntry() :
+	_key(),
+	_accessor(nullptr),
+	_default()
+{}
 
 template<typename T>
 T SettingsEntry<T>::get() const
@@ -76,9 +87,6 @@ void SettingsEntry<T>::setup(const QString &key, ISettingsAccessor *accessor, co
 	_accessor = accessor;
 	_default = defaultValue;
 }
-
-template<>
-void SettingsEntry<void>::setup(const QString &, ISettingsAccessor *, const QVariant &) {}
 
 
 #endif // SETTINGSENTRY_H

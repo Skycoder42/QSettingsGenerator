@@ -9,6 +9,7 @@ namespace {
 void setupDefaultAccessor()
 {
 #ifdef QT_MVVMCORE_LIB
+	QtMvvm::registerInterfaceConverter<ISettingsAccessor>();
 	QtMvvm::ServiceRegistry::instance()->registerInterface<ISettingsAccessor, QSettingsAccessor>(true);
 #endif
 }

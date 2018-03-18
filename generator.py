@@ -119,7 +119,7 @@ def write_header_content(file, parent_node: SettingsNode, intendent: int=1):
 			file.write(tabs + "}} {};\n".format(node.key))
 
 
-def create_settings_file_header(file, name: str, tree: SettingsNode, includes: list):
+def create_settings_file_header(file, name: str, tree: SettingsNode, includes: list, prefix: str):
 	# write header
 	guard = file.name.replace(".", "_").upper()
 	file.write("#ifndef {}\n".format(guard))
@@ -137,7 +137,11 @@ def create_settings_file_header(file, name: str, tree: SettingsNode, includes: l
 	if len(includes) > 0:
 		file.write("\n")
 
-	file.write("class {} : public QObject\n".format(name))
+	if prefix == "":
+		prefix = name
+	else:
+		prefix += " " + name
+	file.write("class {} : public QObject\n".format(prefix))
 	file.write("{\n")
 	file.write("\tQ_OBJECT\n\n")
 	file.write("\tQ_PROPERTY(ISettingsAccessor* accessor MEMBER _accessor)\n")
@@ -248,7 +252,7 @@ def generate_settings_accessor(in_file: str, out_header: str, out_src: str, mvvm
 
 	# create the actual header
 	with open(out_header, "w") as file:
-		create_settings_file_header(file, root.attrib["name"], node_tree, includes)
+		create_settings_file_header(file, root.attrib["name"], node_tree, includes, root.attrib["prefix"])
 	with open(out_src, "w") as file:
 		create_settings_file_source(file, os.path.basename(out_header), root.attrib["name"], node_tree)
 

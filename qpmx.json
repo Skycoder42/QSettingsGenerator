@@ -1,0 +1,28 @@
+{
+    "dependencies": [
+    ],
+    "license": {
+        "file": "LICENSE",
+        "name": "BSD_3_CLAUSE"
+    },
+    "prcFile": "qsettingsgenerator.prc",
+    "priFile": "qsettingsgenerator.pri",
+    "priIncludes": [
+    ],
+    "publishers": {
+        "qpm": {
+            "author": {
+                "email": "skycoder42.de@gmx.de",
+                "name": "Skycoder"
+            },
+            "description": "A qmake extension to generate a C++ settings wrapper for easier, stringless access",
+            "name": "de.skycoder42.qsettingsgenerator",
+            "repository": {
+                "type": "GITHUB",
+                "url": "https://github.com/Skycoder42/QSettingsGenerator.git"
+            },
+            "webpage": "https://github.com/Skycoder42/QSettingsGenerator"
+        }
+    },
+    "source": false
+}

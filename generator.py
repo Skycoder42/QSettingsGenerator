@@ -4,10 +4,19 @@
 import sys
 import os.path
 import copy
+
+from enum import Enum
 try:
 	from defusedxml.ElementTree import parse, ElementTree
 except ImportError:
 	from xml.etree.ElementTree import parse, ElementTree
+
+
+class DefaultType(Enum):
+	Empty = 0
+	Standard = 1,
+	Translated = 2,
+	Code = 3
 
 
 class SettingsNode(list):
@@ -27,6 +36,8 @@ class SettingsNode(list):
 class SettingsEntry(SettingsNode):
 	type: str
 	default: str
+	default_type: DefaultType = DefaultType.Empty
+	ts_key: str = ""
 
 	def __init__(self, key: str, type: str, default: str=""):
 		super().__init__(key)
@@ -56,11 +67,22 @@ def parse_element(element: any) -> SettingsNode:
 		node = SettingsEntry(element.attrib["key"], element.attrib["type"])
 		if "default" in element.attrib:
 			node.default = element.attrib["default"]
+			if "ts" in element.attrib:
+				node.ts_key = element.attrib["ts"]
+				node.default_type = DefaultType.Translated
+			else:
+				node.default_type = DefaultType.Standard
 	else:
 		raise Exception("Unexpected Element: " + element.tag)
 
 	for child in element:
-		node.append(parse_element(child))
+		if isinstance(node, SettingsEntry) and child.tag == "Code":
+			if node.default_type != DefaultType.Empty:
+				raise Exception("An Entry can have at most one <Code> element. You cannot combine it with the \"default\" attribute")
+			node.default_type = DefaultType.Code
+			node.default = child.text
+		else:
+			node.append(parse_element(child))
 
 	return node
 
@@ -174,17 +196,21 @@ def write_node_setup(file, parent_node: SettingsNode, prefix: list=None):
 		nfix.append(node.key)
 		if isinstance(node, SettingsEntry):
 			file.write("\t{}.setup(QStringLiteral(\"{}\"), _accessor".format(".".join(nfix), "/".join(nfix)))
-			if node.default != "":
-				file.write(", QVariant(QStringLiteral(\"{}\")));\n".format(node.default))
-			else:
+			if node.default_type == DefaultType.Empty:
 				file.write(");\n")
+			elif node.default_type == DefaultType.Standard:
+				file.write(", QVariant(QStringLiteral(\"{}\")));\n".format(node.default))
+			elif node.default_type == DefaultType.Translated:
+				file.write(", QVariant(QCoreApplication::translate(\"{}\", \"{}\")));\n".format(node.ts_key, node.default))
+			elif node.default_type == DefaultType.Code:
+				file.write(", QVariant::fromValue<{}>({}));\n".format(node.type, node.default.strip()))
 		write_node_setup(file, node, nfix)
 
 
 def create_settings_file_source(file, header: str, name: str, tree: SettingsNode):
 	file.write("#include \"{}\"\n".format(header))
-	file.write("#ifdef QT_MVVMCORE_LIB\n")
 	file.write("#include <QCoreApplication>\n")
+	file.write("#ifdef QT_MVVMCORE_LIB\n")
 	file.write("#include <QtMvvmCore/ServiceRegistry>\n")
 	file.write("#else\n")
 	file.write("#include <QGlobalStatic>\n")

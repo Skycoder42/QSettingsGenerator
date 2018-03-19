@@ -14,7 +14,8 @@ public:
 	Q_INVOKABLE explicit QSettingsAccessor(QObject *parent = nullptr);
 	explicit QSettingsAccessor(QSettings *settings, QObject *parent = nullptr);
 
-	QVariant load(const QString &key, const QVariant &defaultValue) override;
+	bool contains(const QString &key) const override;
+	QVariant load(const QString &key, const QVariant &defaultValue) const override;
 	void save(const QString &key, const QVariant &value) override;
 	void remove(const QString &key) override;
 

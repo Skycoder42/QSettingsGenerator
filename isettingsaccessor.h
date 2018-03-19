@@ -10,7 +10,8 @@ class ISettingsAccessor
 public:
 	virtual inline ~ISettingsAccessor() = default;
 
-	virtual QVariant load(const QString &key, const QVariant &defaultValue = {}) = 0;
+	virtual bool contains(const QString &key) const = 0;
+	virtual QVariant load(const QString &key, const QVariant &defaultValue = {}) const = 0;
 	virtual void save(const QString &key, const QVariant &value) = 0;
 	virtual void remove(const QString &key) = 0;
 };

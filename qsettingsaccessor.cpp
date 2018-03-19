@@ -23,12 +23,18 @@ QSettingsAccessor::QSettingsAccessor(QObject *parent) :
 
 QSettingsAccessor::QSettingsAccessor(QSettings *settings, QObject *parent) :
 	QObject(parent),
+	ISettingsAccessor(),
 	_settings(settings)
 {
 	_settings->setParent(this);
 }
 
-QVariant QSettingsAccessor::load(const QString &key, const QVariant &defaultValue)
+bool QSettingsAccessor::contains(const QString &key) const
+{
+	return _settings->contains(key);
+}
+
+QVariant QSettingsAccessor::load(const QString &key, const QVariant &defaultValue) const
 {
 	return _settings->value(key, defaultValue);
 }

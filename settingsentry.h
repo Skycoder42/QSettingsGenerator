@@ -11,6 +11,8 @@ class SettingsEntry
 public:
 	SettingsEntry();
 
+	bool isSet() const;
+
 	T get() const;
 	void set(T value);
 	void reset();
@@ -48,6 +50,12 @@ SettingsEntry<T>::SettingsEntry() :
 	_accessor(nullptr),
 	_default()
 {}
+
+template<typename T>
+bool SettingsEntry<T>::isSet() const
+{
+	return _accessor->contains(_key);
+}
 
 template<typename T>
 T SettingsEntry<T>::get() const

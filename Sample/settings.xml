@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Settings name="Settings" backend="QSettingsAccessor"> <!-- You can use custom backends per file. This is the default one -->
+	<!-- Additional includes can be added -->
+	<Include>mytype.h</Include>
+
+	<!-- Basic Nodes with entries -->
+	<Node key="gui">
+		<Entry key="style" type="QString" default="fusion"/>
+		<Node key="mainwindow">
+			<Entry key="geometry" type="QByteArray"/>
+			<Entry key="state" type="QByteArray"/>
+		</Node>
+		<!-- The default value of entries can be translated -->
+		<!-- The value of the "ts" attribute serves as the context -->
+		<Entry key="title" type="QString" default="Hello World!" ts="MainWindow"/>
+	</Node>
+
+	<!-- Entries can also contain other nodes -->
+	<Entry key="generator" type="bool" default="true">
+		<Node key="sources">
+			<Entry key="normal" type="QString"/>
+			<Entry key="extended" type="QString"/>
+		</Node>
+		<Entry key="timeout" type="int" default="5000"/>
+	</Entry>
+
+	<!-- Furthermore you can include C++ code for defaults that cannot easily be represented as a string -->
+	<Entry key="myType" type="MyType">
+		<Code>
+			MyType {true, 42, MyType::someFunc("test")}
+		</Code>
+	</Entry>
+</Settings>

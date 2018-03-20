@@ -5,15 +5,17 @@ qtHaveModule(mvvmcore): QT += mvvmcore
 HEADERS += \
 	$$PWD/isettingsaccessor.h \
 	$$PWD/settingsentry.h  \
-	$$PWD/qsettingsaccessor.h
+	$$PWD/qsettingsaccessor.h \
+    $$PWD/datasyncsettingsaccessor.h
 
 SOURCES += \
-	$$PWD/qsettingsaccessor.cpp
+	$$PWD/qsettingsaccessor.cpp \
+    $$PWD/datasyncsettingsaccessor.cpp
 
 qtHaveModule(datasync) {
 	QT += datasync
-	HEADERS += $$PWD/datasyncsettingsgenerator.h
-	SOURCES += $$PWD/datasyncsettingsgenerator.cpp
+	HEADERS +=
+	SOURCES +=
 }
 
 TRANSLATIONS +=

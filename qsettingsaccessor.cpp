@@ -4,19 +4,6 @@
 #include <QtMvvmCore/ServiceRegistry>
 #endif
 
-namespace {
-
-void setupDefaultAccessor()
-{
-#ifdef QT_MVVMCORE_LIB
-	QtMvvm::registerInterfaceConverter<ISettingsAccessor>();
-	QtMvvm::ServiceRegistry::instance()->registerInterface<ISettingsAccessor, QSettingsAccessor>(true);
-#endif
-}
-
-}
-Q_COREAPP_STARTUP_FUNCTION(setupDefaultAccessor)
-
 QSettingsAccessor::QSettingsAccessor(QObject *parent) :
 	QSettingsAccessor(new QSettings(), parent)
 {}

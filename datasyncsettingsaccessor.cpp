@@ -1,24 +1,24 @@
-#include "datasyncsettingsgenerator.h"
+#include "datasyncsettingsaccessor.h"
 #include <QDataStream>
 #include <QMetaProperty>
 #include <QDebug>
 
-DataSyncSettingsGenerator::DataSyncSettingsGenerator(QObject *parent) :
-	DataSyncSettingsGenerator(QtDataSync::DefaultSetup, parent)
+DataSyncSettingsAccessor::DataSyncSettingsAccessor(QObject *parent) :
+	DataSyncSettingsAccessor(QtDataSync::DefaultSetup, parent)
 {}
 
-DataSyncSettingsGenerator::DataSyncSettingsGenerator(const QString &setup, QObject *parent) :
+DataSyncSettingsAccessor::DataSyncSettingsAccessor(const QString &setup, QObject *parent) :
 	QObject(parent),
 	ISettingsAccessor(),
 	_store(new QtDataSync::CachingDataTypeStore<DataSyncSettingsEntry>(setup, this))
 {}
 
-bool DataSyncSettingsGenerator::contains(const QString &key) const
+bool DataSyncSettingsAccessor::contains(const QString &key) const
 {
 	return _store->contains(key);
 }
 
-QVariant DataSyncSettingsGenerator::load(const QString &key, const QVariant &defaultValue) const
+QVariant DataSyncSettingsAccessor::load(const QString &key, const QVariant &defaultValue) const
 {
 	if(_store->contains(key)) {
 		QVariant value;
@@ -32,7 +32,7 @@ QVariant DataSyncSettingsGenerator::load(const QString &key, const QVariant &def
 		return defaultValue;
 }
 
-void DataSyncSettingsGenerator::save(const QString &key, const QVariant &value)
+void DataSyncSettingsAccessor::save(const QString &key, const QVariant &value)
 {
 	try {
 		QByteArray data;
@@ -47,7 +47,7 @@ void DataSyncSettingsGenerator::save(const QString &key, const QVariant &value)
 	}
 }
 
-void DataSyncSettingsGenerator::remove(const QString &key)
+void DataSyncSettingsAccessor::remove(const QString &key)
 {
 	try {
 		_store->remove(key);

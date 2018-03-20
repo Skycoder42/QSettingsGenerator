@@ -17,14 +17,14 @@ public:
 	QByteArray value;
 };
 
-class DataSyncSettingsGenerator : public QObject, public ISettingsAccessor
+class DataSyncSettingsAccessor : public QObject, public ISettingsAccessor
 {
 	Q_OBJECT
 	Q_INTERFACES(ISettingsAccessor)
 
 public:
-	Q_INVOKABLE explicit DataSyncSettingsGenerator(QObject *parent = nullptr);
-	explicit DataSyncSettingsGenerator(const QString &setup, QObject *parent = nullptr);
+	Q_INVOKABLE explicit DataSyncSettingsAccessor(QObject *parent = nullptr);
+	explicit DataSyncSettingsAccessor(const QString &setup, QObject *parent = nullptr);
 
 	bool contains(const QString &key) const override;
 	QVariant load(const QString &key, const QVariant &defaultValue) const override;

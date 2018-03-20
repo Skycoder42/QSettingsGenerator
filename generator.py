@@ -134,6 +134,10 @@ def write_header_content(file, parent_node: SettingsNode, intendent: int=1):
 			else:
 				file.write(tabs + "struct : SettingsEntry<{}> {{\n".format(node.type))
 				write_header_content(file, node, intendent+1)
+				file.write(tabs + "\tauto &operator=({} value) {{\n".format(node.type))
+				file.write(tabs + "\t\t((SettingsEntry<{}>&)*this) = value;\n".format(node.type))
+				file.write(tabs + "\t\treturn (*this);\n")
+				file.write(tabs + "\t}\n")
 				file.write(tabs + "}} {};\n".format(node.key))
 		else:
 			file.write(tabs + "struct {\n")
@@ -148,9 +152,6 @@ def create_settings_file_header(file, name: str, tree: SettingsNode, includes: l
 	file.write("#define {}\n\n".format(guard))
 
 	file.write("#include <QObject>\n")
-	file.write("#ifdef QT_MVVMCORE_LIB\n")
-	file.write("#include <QtMvvmCore/Injection>\n")
-	file.write("#endif\n")
 	file.write("#include <isettingsaccessor.h>\n")
 	file.write("#include <settingsentry.h>\n\n")
 
@@ -166,21 +167,15 @@ def create_settings_file_header(file, name: str, tree: SettingsNode, includes: l
 	file.write("class {} : public QObject\n".format(prefix))
 	file.write("{\n")
 	file.write("\tQ_OBJECT\n\n")
-	file.write("\tQ_PROPERTY(ISettingsAccessor* accessor MEMBER _accessor)\n")
-	file.write("#ifdef QT_MVVMCORE_LIB\n")
-	file.write("\tQTMVVM_INJECT(ISettingsAccessor*, accessor)\n")
-	file.write("#endif\n\n")
 
 	file.write("public:\n")
-	file.write("\tQ_INVOKABLE explicit {}(QObject *parent = nullptr);\n\n".format(name))
+	file.write("\tQ_INVOKABLE explicit {}(QObject *parent = nullptr);\n".format(name))
+	file.write("\texplicit {}(QObject *parent, ISettingsAccessor *accessor);\n\n".format(name))
 	file.write("\tstatic {} *instance();\n\n".format(name))
-	file.write("\tvoid setAccessor(ISettingsAccessor* accessor);\n\n")
 
 	write_header_content(file, tree)
 
-	file.write("\nprivate Q_SLOTS:\n")
-	file.write("\tvoid qtmvvm_init();\n\n")
-	file.write("private:\n")
+	file.write("\nprivate:\n")
 	file.write("\tISettingsAccessor *_accessor;\n")
 	file.write("};\n\n")
 
@@ -207,14 +202,16 @@ def write_node_setup(file, parent_node: SettingsNode, prefix: list=None):
 		write_node_setup(file, node, nfix)
 
 
-def create_settings_file_source(file, header: str, name: str, tree: SettingsNode):
+def create_settings_file_source(file, header: str, name: str, tree: SettingsNode, accessor: str):
 	file.write("#include \"{}\"\n".format(header))
 	file.write("#include <QCoreApplication>\n")
 	file.write("#ifdef QT_MVVMCORE_LIB\n")
 	file.write("#include <QtMvvmCore/ServiceRegistry>\n")
 	file.write("#else\n")
 	file.write("#include <QGlobalStatic>\n")
-	file.write("#endif\n\n")
+	file.write("#endif\n")
+	file.write("#include <qsettingsaccessor.h>\n")
+	file.write("#include <datasyncsettingsaccessor.h>\n\n")
 
 	# setup
 	file.write("#ifdef QT_MVVMCORE_LIB\n")
@@ -226,14 +223,22 @@ def create_settings_file_source(file, header: str, name: str, tree: SettingsNode
 	file.write("}\n")
 	file.write("Q_COREAPP_STARTUP_FUNCTION(__generated_settings_setup)\n")
 	file.write("#else\n")
-	file.write("Q_GLOBAL_STATIC_ARGS({}*, settings_instance)\n".format(name))
+	file.write("Q_GLOBAL_STATIC({}, settings_instance)\n".format(name))
 	file.write("#endif\n\n")
 
-	# constructor
+	# constructor 1
 	file.write("{}::{}(QObject *parent) :\n".format(name, name))
-	file.write("\tQObject(parent),\n")
-	file.write("\t_accessor(nullptr)\n")
+	file.write("\t{}(parent, new {}())\n".format(name, accessor))
 	file.write("{}\n\n")
+
+	# constructor 2
+	file.write("{}::{}(QObject *parent, ISettingsAccessor *accessor) :\n".format(name, name))
+	file.write("\tQObject(parent),\n")
+	file.write("\t_accessor(accessor)\n")
+	file.write("{\n")
+	file.write("\tdynamic_cast<QObject*>(_accessor)->setParent(this);\n")
+	write_node_setup(file, tree)
+	file.write("}\n\n")
 
 	# instance
 	file.write("{} *{}::instance()\n".format(name, name))
@@ -244,20 +249,6 @@ def create_settings_file_source(file, header: str, name: str, tree: SettingsNode
 	file.write("\treturn settings_instance;\n")
 	file.write("#endif\n")
 	file.write("}\n\n")
-
-	# setAccessor
-	file.write("void {}::setAccessor(ISettingsAccessor* accessor)\n".format(name))
-	file.write("{\n")
-	file.write("\t_accessor = accessor;\n")
-	file.write("\tqtmvvm_init();\n")
-	file.write("}\n\n")
-
-	# qtmvvm_init
-	file.write("void {}::qtmvvm_init()\n".format(name))
-	file.write("{\n")
-	file.write("\tQ_ASSERT_X(_accessor, Q_FUNC_INFO, \"You must set a valid accessor before initializing the settings!\");\n")
-	write_node_setup(file, tree)
-	file.write("}\n")
 
 
 def generate_settings_accessor(in_file: str, out_header: str, out_src: str, mvvm_files: list):
@@ -278,9 +269,11 @@ def generate_settings_accessor(in_file: str, out_header: str, out_src: str, mvvm
 
 	# create the actual header
 	with open(out_header, "w") as file:
-		create_settings_file_header(file, root.attrib["name"], node_tree, includes, root.attrib["prefix"])
+		prefix = root.attrib["prefix"] if "prefix" in root.attrib else ""
+		create_settings_file_header(file, root.attrib["name"], node_tree, includes, prefix)
 	with open(out_src, "w") as file:
-		create_settings_file_source(file, os.path.basename(out_header), root.attrib["name"], node_tree)
+		backend = root.attrib["backend"] if "backend" in root.attrib else "QSettingsAccessor"
+		create_settings_file_source(file, os.path.basename(out_header), root.attrib["name"], node_tree, backend)
 
 
 if __name__ == '__main__':

@@ -72,6 +72,9 @@ def parse_element(element: any) -> SettingsNode:
 				node.default_type = DefaultType.Translated
 			else:
 				node.default_type = DefaultType.Standard
+	elif element.tag == "Array":
+		print("Array elements are not supported yet", file=sys.stderr)
+		return SettingsNode(element.attrib["key"])
 	else:
 		raise Exception("Unexpected Element: " + element.tag)
 
@@ -277,8 +280,9 @@ def generate_settings_accessor(in_file: str, out_header: str, out_src: str, mvvm
 	flatten(node_tree)
 
 	# create the actual header
+	prefix = root.attrib["prefix"] if "prefix" in root.attrib else ""
 	with open(out_header, "w") as file:
-		create_settings_file_header(file, root.attrib["name"], node_tree, includes, root.attrib["prefix"])
+		create_settings_file_header(file, root.attrib["name"], node_tree, includes, prefix)
 	with open(out_src, "w") as file:
 		create_settings_file_source(file, os.path.basename(out_header), root.attrib["name"], node_tree)
 

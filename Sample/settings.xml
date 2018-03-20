@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Settings name="Settings">
+	<!-- Additional includes can be added -->
+	<Include>mytype.h</Include>
+	<Include>gender.h</Include>
+
+	<!-- Basic Nodes with entries -->
+	<Node key="gui">
+		<Entry key="style" type="QString" default="fusion"/>
+		<Node key="mainwindow">
+			<Entry key="geometry" type="QByteArray"/>
+			<Entry key="state" type="QByteArray"/>
+		</Node>
+		<!-- The default value of entries can be translated -->
+		<!-- The value of the "ts" attribute serves as the context -->
+		<Entry key="title" type="QString" default="Hello World!" ts="MainWindow"/>
+	</Node>
+
+	<!-- Entries can also contain other nodes -->
+	<Entry key="generator" type="bool" default="true">
+		<Node key="sources">
+			<Entry key="normal" type="QString"/>
+			<Entry key="extended" type="QString"/>
+		</Node>
+		<Entry key="timeout" type="int" default="5000"/>
+	</Entry>
+
+	<!-- Another special node is the array - it's a simple way to create a convenient wrapper around the standard settings array -->
+	<!-- The only limitation here is, that the array must be statically typed -->
+	<Array key="users">
+		<!-- The Content defined here applies to every element in the array -->
+		<Format>
+			<Node key="name">
+				<Entry key="first" type="QString"/>
+				<Entry key="last" type="QString"/>
+			</Node>
+			<Entry key="age" type="int" default="18"/>
+			<Entry key="gender" type="Gender">
+				<Entry key="special" type="bool"/>
+			</Entry>
+		</Format>
+
+		<!-- Specify defaults as additional Element entries of the array -->
+		<Element>
+			<Node key="name">
+				<Value key="first" value="Lucas"/>
+				<Value key="last" value="Sacul"/>
+			</Node>
+			<Value key="age" value="22"/>
+			<Value key="gender">
+				<Code>Gender::Male</Code>
+				<Value key="special" value="true"/>
+			</Value>
+		</Element>
+		<Element>
+			<Node key="name">
+				<Value key="first" value="Stacy"/>
+				<Value key="last" value="Ycats"/>
+			</Node>
+			<!-- For all other entries the defaults are used. Stacy is now 18 and female -->
+		</Element>
+	</Array>
+
+	<!-- Furthermore you can include C++ code for more complicated datatypes -->
+	<Entry key="myType" type="MyType">
+		<Code>
+			MyType {true, 42, MyType::someFunc("test")}
+		</Code>
+	</Entry>
+</Settings>

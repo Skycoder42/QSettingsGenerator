@@ -25,46 +25,54 @@
 		<Entry key="timeout" type="int" default="5000"/>
 	</Entry>
 
-	<!-- Another special node is the array - it's a simple way to create a convenient wrapper around the standard settings array -->
-	<!-- The only limitation here is, that the array must be statically typed -->
-	<Array key="users">
-		<!-- The Content defined here applies to every element in the array -->
-		<Format>
-			<Node key="name">
-				<Entry key="first" type="QString"/>
-				<Entry key="last" type="QString"/>
-			</Node>
-			<Entry key="age" type="int" default="18"/>
-			<Entry key="gender" type="Gender">
-				<Entry key="special" type="bool"/>
-			</Entry>
-		</Format>
-
-		<!-- Specify defaults as additional Element entries of the array -->
-		<Element>
-			<Node key="name">
-				<Value key="first" value="Lucas"/>
-				<Value key="last" value="Sacul"/>
-			</Node>
-			<Value key="age" value="22"/>
-			<Value key="gender">
-				<Code>Gender::Male</Code>
-				<Value key="special" value="true"/>
-			</Value>
-		</Element>
-		<Element>
-			<Node key="name">
-				<Value key="first" value="Stacy"/>
-				<Value key="last" value="Ycats"/>
-			</Node>
-			<!-- For all other entries the defaults are used. Stacy is now 18 and female -->
-		</Element>
-	</Array>
-
-	<!-- Furthermore you can include C++ code for more complicated datatypes -->
+	<!-- Furthermore you can include C++ code for defaults that cannot easily be represented as a string -->
 	<Entry key="myType" type="MyType">
 		<Code>
 			MyType {true, 42, MyType::someFunc("test")}
 		</Code>
 	</Entry>
+
+	<Mapping type="User">
+		<Node key="name">
+			<Entry key="first" type="QString"/>
+			<Entry key="last" type="QString"/>
+		</Node>
+		<Entry key="age" type="int"/>
+		<Entry key="gender" type="Gender">
+			<Entry key="special" type="bool"/>
+		</Entry>
+
+		<!-- Defines a method body to convert from the (virtual) settings entry to the datatype in C++ code -->
+		<Read>
+			return User { name.first, name.last, age, gender, gender.special };
+		</Read>
+		<!-- Defines a method body to convert from the datatype to the (virtual) settings entry in C++ code -->
+		<Write param="user">
+			name.first = user.firstname;
+			name.last = user.lastname;
+			age = user.age;
+			gender = user.gender;
+			gender.special = user.isSpecial();
+		</Write>
+	</Mapping>
+
+	<Node key="users">
+		<Entry key="current" type="User">
+			<Code>
+				User { "Lucas", "Sacul", 22, Gender::Male, true }
+			</Code>
+		</Entry>
+
+		<!-- Another special node is the array - it's a simple way to create a convenient wrapper around the standard settings array -->
+		<!-- The only limitation here is, that the array must be statically typed and that type must be a mapped type-->
+		<Array key="all" type="User">
+			<!-- Specify default array elements as additional Element entries of the array -->
+			<Element>
+				User { "Lucas", "Sacul", 22, Gender::Male, true }
+			</Element>
+			<Element>
+				User { "Stacy", "Ycats" }
+			</Element>
+		</Array>
+	</Node>
 </Settings>

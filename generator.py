@@ -115,7 +115,7 @@ def add_tree_mvvm(root_node: SettingsNode, root_tree: ElementTree):
 			entry = SettingsEntry(entry_key, elem.attrib["type"])
 			if "default" in elem.attrib:
 				entry.default = elem.attrib["default"]
-				if element.attrib["tsdefault"] if "tsdefault" in element.attrib else False:
+				if elem.attrib["tsdefault"] if "tsdefault" in elem.attrib else False:
 					node.ts_key = "qtmvvm_settings_xml"
 					node.default_type = DefaultType.Translated
 				else:

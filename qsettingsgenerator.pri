@@ -1,6 +1,7 @@
 INCLUDEPATH += $$PWD
 
 qtHaveModule(mvvmcore): QT += mvvmcore
+CONFIG += c++14
 
 HEADERS += \
 	$$PWD/isettingsaccessor.h \

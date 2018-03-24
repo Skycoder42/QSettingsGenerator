@@ -172,11 +172,13 @@ def create_settings_file_header(file, name: str, tree: SettingsNode, includes: l
 	file.write("class {} : public QObject\n".format(prefix))
 	file.write("{\n")
 	file.write("\tQ_OBJECT\n\n")
+	file.write("\tQ_PROPERTY(ISettingsAccessor *accessor READ accessor CONSTANT FINAL)\n\n")
 
 	file.write("public:\n")
 	file.write("\tQ_INVOKABLE explicit {}(QObject *parent = nullptr);\n".format(name))
 	file.write("\texplicit {}(QObject *parent, ISettingsAccessor *accessor);\n\n".format(name))
 	file.write("\tstatic {} *instance();\n\n".format(name))
+	file.write("\tISettingsAccessor *accessor() const;\n\n")
 
 	write_header_content(file, tree)
 
@@ -254,6 +256,12 @@ def create_settings_file_source(file, header: str, name: str, tree: SettingsNode
 	file.write("\treturn settings_instance;\n")
 	file.write("#endif\n")
 	file.write("}\n\n")
+
+	# read-ac
+	file.write("ISettingsAccessor *{}::accessor() const\n".format(name))
+	file.write("{\n")
+	file.write("\treturn _accessor;\n")
+	file.write("}\n")
 
 
 def generate_settings_accessor(in_file: str, out_header: str, out_src: str, mvvm_files: list):

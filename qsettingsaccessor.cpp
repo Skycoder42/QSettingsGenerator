@@ -14,6 +14,8 @@ QSettingsAccessor::QSettingsAccessor(QSettings *settings, QObject *parent) :
 	_settings(settings)
 {
 	_settings->setParent(this);
+	connect(qApp, &QCoreApplication::aboutToQuit,
+			this, &QSettingsAccessor::sync);
 }
 
 bool QSettingsAccessor::contains(const QString &key) const
@@ -34,4 +36,9 @@ void QSettingsAccessor::save(const QString &key, const QVariant &value)
 void QSettingsAccessor::remove(const QString &key)
 {
 	_settings->remove(key);
+}
+
+void QSettingsAccessor::sync()
+{
+	_settings->sync();
 }

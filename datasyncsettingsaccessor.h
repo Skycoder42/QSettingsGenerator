@@ -31,6 +31,9 @@ public:
 	void save(const QString &key, const QVariant &value) override;
 	void remove(const QString &key) override;
 
+public Q_SLOTS:
+	void sync() override;
+
 private:
 	QtDataSync::CachingDataTypeStore<DataSyncSettingsEntry> *_store;
 };

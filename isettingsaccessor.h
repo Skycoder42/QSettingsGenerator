@@ -14,6 +14,9 @@ public:
 	virtual QVariant load(const QString &key, const QVariant &defaultValue = {}) const = 0;
 	virtual void save(const QString &key, const QVariant &value) = 0;
 	virtual void remove(const QString &key) = 0;
+
+public Q_SLOTS:
+	virtual void sync() = 0;
 };
 
 #define ISettingsAccessorIid "de.skycoder42.qsettingsgenerator.ISettingsAccessor"

@@ -56,3 +56,8 @@ void DataSyncSettingsAccessor::remove(const QString &key)
 					<< e.what();
 	}
 }
+
+void DataSyncSettingsAccessor::sync()
+{
+	//nothing to be done
+}

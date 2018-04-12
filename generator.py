@@ -152,7 +152,7 @@ def write_header_content(file, parent_node: SettingsNode, intendent: int=1):
 
 def create_settings_file_header(file, name: str, tree: SettingsNode, includes: list, prefix: str):
 	# write header
-	guard = file.name.replace(".", "_").upper()
+	guard = os.path.basename(file.name).replace(".", "_").upper()
 	file.write("#ifndef {}\n".format(guard))
 	file.write("#define {}\n\n".format(guard))
 

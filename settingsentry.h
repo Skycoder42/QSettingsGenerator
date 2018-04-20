@@ -9,7 +9,7 @@ class SettingsEntry
 	Q_DISABLE_COPY(SettingsEntry)
 
 public:
-	SettingsEntry();
+	SettingsEntry() = default;
 
 	bool isSet() const;
 
@@ -19,6 +19,13 @@ public:
 
 	SettingsEntry<T> &operator=(T value);
 	operator T() const;
+
+	void addChangeCallback(const std::function<void(T)> &callback);
+	void addChangeCallback(QObject *scope, const std::function<void(T)> &callback);
+	void addRemovedCallback(const std::function<void()> &callback);
+	void addRemovedCallback(QObject *scope, const std::function<void()> &callback);
+	void addAllCallback(const std::function<void(bool,T)> &callback);
+	void addAllCallback(QObject *scope, const std::function<void(bool,T)> &callback);
 
 	// internal
 	void setup(const QString &key, ISettingsAccessor *accessor, const QVariant &defaultValue = {});
@@ -35,7 +42,7 @@ class SettingsEntry<void>
 	Q_DISABLE_COPY(SettingsEntry)
 
 public:
-	SettingsEntry() {}
+	SettingsEntry() = default;
 
 	// internal
 	void setup(const QString &, ISettingsAccessor *, const QVariant & = {}) {}
@@ -43,13 +50,6 @@ public:
 
 
 // ------------- Generic Implementation -------------
-
-template<typename T>
-SettingsEntry<T>::SettingsEntry() :
-	_key(),
-	_accessor(nullptr),
-	_default()
-{}
 
 template<typename T>
 bool SettingsEntry<T>::isSet() const
@@ -81,6 +81,58 @@ SettingsEntry<T> &SettingsEntry<T>::operator=(T value)
 	set(value);
 	return (*this);
 }
+
+template<typename T>
+void SettingsEntry<T>::addChangeCallback(const std::function<void (T)> &callback)
+{
+	addChangeCallback(_accessor, callback);
+}
+
+template<typename T>
+void SettingsEntry<T>::addChangeCallback(QObject *scope, const std::function<void (T)> &callback)
+{
+	auto mKey = _key;
+	QObject::connect(_accessor, &ISettingsAccessor::entryChanged,
+					 scope, [mKey, callback](const QString &key, const QVariant &value) {
+		if(key == mKey)
+			callback(value.template value<T>());
+	});
+}
+
+template<typename T>
+void SettingsEntry<T>::addRemovedCallback(const std::function<void ()> &callback)
+{
+	addRemovedCallback(_accessor, callback);
+}
+
+template<typename T>
+void SettingsEntry<T>::addRemovedCallback(QObject *scope, const std::function<void ()> &callback)
+{
+	auto mKey = _key;
+	QObject::connect(_accessor, &ISettingsAccessor::entryRemoved,
+					 scope, [mKey, callback](const QString &key) {
+		if(key == mKey)
+			callback();
+	});
+}
+
+template<typename T>
+void SettingsEntry<T>::addAllCallback(const std::function<void (bool, T)> &callback)
+{
+	addAllCallback(_accessor, callback);
+}
+
+template<typename T>
+void SettingsEntry<T>::addAllCallback(QObject *scope, const std::function<void (bool, T)> &callback)
+{
+	addChangeCallback(scope, [callback](T value) {
+		callback(true, value);
+	});
+	addRemovedCallback(scope, [callback](){
+		callback(false, {});
+	});
+}
+
 template<typename T>
 SettingsEntry<T>::operator T() const
 {

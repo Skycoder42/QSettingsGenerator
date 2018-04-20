@@ -5,10 +5,13 @@
 #include <QString>
 #include <QVariant>
 
-class ISettingsAccessor
+class ISettingsAccessor : public QObject
 {
+	Q_OBJECT
+	Q_DISABLE_COPY(ISettingsAccessor)
+
 public:
-	virtual inline ~ISettingsAccessor() = default;
+	ISettingsAccessor(QObject *parent = nullptr);
 
 	virtual bool contains(const QString &key) const = 0;
 	virtual QVariant load(const QString &key, const QVariant &defaultValue = {}) const = 0;
@@ -17,6 +20,10 @@ public:
 
 public Q_SLOTS:
 	virtual void sync() = 0;
+
+Q_SIGNALS:
+	void entryChanged(const QString &key, const QVariant &value);
+	void entryRemoved(const QString &key);
 };
 
 #define ISettingsAccessorIid "de.skycoder42.qsettingsgenerator.ISettingsAccessor"

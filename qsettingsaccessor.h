@@ -5,7 +5,7 @@
 #include <QSettings>
 #include "isettingsaccessor.h"
 
-class QSettingsAccessor : public QObject, public ISettingsAccessor
+class QSettingsAccessor : public ISettingsAccessor
 {
 	Q_OBJECT
 	Q_INTERFACES(ISettingsAccessor)

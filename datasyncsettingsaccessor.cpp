@@ -8,8 +8,7 @@ DataSyncSettingsAccessor::DataSyncSettingsAccessor(QObject *parent) :
 {}
 
 DataSyncSettingsAccessor::DataSyncSettingsAccessor(const QString &setup, QObject *parent) :
-	QObject(parent),
-	ISettingsAccessor(),
+	ISettingsAccessor(parent),
 	_store(new QtDataSync::CachingDataTypeStore<DataSyncSettingsEntry>(setup, this))
 {}
 
@@ -60,4 +59,12 @@ void DataSyncSettingsAccessor::remove(const QString &key)
 void DataSyncSettingsAccessor::sync()
 {
 	//nothing to be done
+}
+
+void DataSyncSettingsAccessor::dataChanged(const QString &key, const QVariant &value)
+{
+	if(value.isValid())
+		emit entryChanged(key, value);
+	else
+		emit entryRemoved(key);
 }

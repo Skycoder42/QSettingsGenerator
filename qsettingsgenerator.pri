@@ -11,7 +11,8 @@ HEADERS += \
 
 SOURCES += \
 	$$PWD/qsettingsaccessor.cpp \
-    $$PWD/datasyncsettingsaccessor.cpp
+    $$PWD/datasyncsettingsaccessor.cpp \
+    $$PWD/isettingsaccessor.cpp
 
 qtHaveModule(datasync) {
 	QT += datasync

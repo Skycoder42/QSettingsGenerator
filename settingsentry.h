@@ -22,10 +22,6 @@ public:
 
 	void addChangeCallback(const std::function<void(T)> &callback);
 	void addChangeCallback(QObject *scope, const std::function<void(T)> &callback);
-	void addRemovedCallback(const std::function<void()> &callback);
-	void addRemovedCallback(QObject *scope, const std::function<void()> &callback);
-	void addAllCallback(const std::function<void(bool,T)> &callback);
-	void addAllCallback(QObject *scope, const std::function<void(bool,T)> &callback);
 
 	// internal
 	void setup(const QString &key, ISettingsAccessor *accessor, const QVariant &defaultValue = {});
@@ -92,44 +88,16 @@ template<typename T>
 void SettingsEntry<T>::addChangeCallback(QObject *scope, const std::function<void (T)> &callback)
 {
 	auto mKey = _key;
+	auto mDefault = _default;
 	QObject::connect(_accessor, &ISettingsAccessor::entryChanged,
 					 scope, [mKey, callback](const QString &key, const QVariant &value) {
 		if(key == mKey)
 			callback(value.template value<T>());
 	});
-}
-
-template<typename T>
-void SettingsEntry<T>::addRemovedCallback(const std::function<void ()> &callback)
-{
-	addRemovedCallback(_accessor, callback);
-}
-
-template<typename T>
-void SettingsEntry<T>::addRemovedCallback(QObject *scope, const std::function<void ()> &callback)
-{
-	auto mKey = _key;
 	QObject::connect(_accessor, &ISettingsAccessor::entryRemoved,
-					 scope, [mKey, callback](const QString &key) {
+					 scope, [mKey, mDefault, callback](const QString &key) {
 		if(key == mKey)
-			callback();
-	});
-}
-
-template<typename T>
-void SettingsEntry<T>::addAllCallback(const std::function<void (bool, T)> &callback)
-{
-	addAllCallback(_accessor, callback);
-}
-
-template<typename T>
-void SettingsEntry<T>::addAllCallback(QObject *scope, const std::function<void (bool, T)> &callback)
-{
-	addChangeCallback(scope, [callback](T value) {
-		callback(true, value);
-	});
-	addRemovedCallback(scope, [callback](){
-		callback(false, {});
+			callback(mDefault.template value<T>());
 	});
 }
 
